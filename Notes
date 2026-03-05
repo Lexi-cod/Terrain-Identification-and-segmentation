@@ -1,0 +1,42 @@
+After version 1:
+We used a stride-based approach, basically take every Nth scan and skip the rest. For example stride=10 means we keep scan 0, skip 1-9, keep 10, skip 11-19, etc. This is why we ended up with ~16% of the full data.
+
+To avoid losing rare classes (cyclists, pedestrians, motorcyclists), scans containing those classes are sampled more frequently using a smaller rare_stride:
+Train: stride=10, rare_stride=8
+Val: stride=10, rare_stride=6
+Test: stride=12, rare_stride=10
+
+If anyone wants to experiment, the easiest way to get more data is just reducing the stride values. For example changing train stride from 10 → 6 and rare_stride from 8 → 4 would roughly double the dataset size. Would be interesting to see if that improves mIoU! also try to play with the hyperparameters to see if it gives better results
+--------------------------------
+
+Got it running on Colab with our subsampled dataset (12GB total - train+test+val) and got 44.7% val mIoU at 200 epochs. Current dataset breakdown: 2,913 train scans + 871 val scans (3,784 total) out of the full 23,201 train+val scans SemanticKITTI scans - roughly 15% of the full dataset.
+
+Hyperparameters used: batch size 6, val batch size 4, epoch steps 100, val steps 100. The gap from the 58.8% baseline is mostly due to less data, scaled-down hyperparameters, and not yet reaching the full 800 epochs (official uses batch size 12, epoch steps 500, val steps 200).
+
+Next:
+Keep training toward 800 epochs
+Increase train + val data to ~15GB (keeping test set untouched)
+Run inference on test sequences 11-21
+Once hit a reasonable mIoU, experiment with other models like KPConvX
+
+Some observations:
+epoch=10, epoch step=10, val step=50
+val mIoU - 15-20%
+epoch=100, epoch step=100, val step=100
+val mIoU - 33%
+epoch=200, epoch step=100, val step=100
+val mIoU - 44.7%
+-----------------------------------
+
+After version 2:
+Tested on the same 3 validation frames as last time and the predictions are visually much better, the model clearly learned a lot. But there's a catch: it's gotten so confident that it's now hallucinating rare classes like cyclists and motorcyclists where they don't actually exist in the scene.
+
+Ran until ~400 epochs and sitting at 54-55% mIoU. The number looks okay but honestly it's misleading, common classes like road, buildings and vegetation are at 85%+ but rare classes are dragging the overall score down and more importantly aren't reliable in realistic scenarios.
+
+Considering 2 options for now:
+1. Add more rare class data, specifically sequences with more pedestrians, cyclists and motorcyclists
+2. Remove/merge the classes we can't learn properly at this data size
+
+epoch=450, epoch step=150, val step=150
+val mIoU - 54-55% - hallucinating!!!!!!!!!
+Going with option 1. Will get the data sorted and will work on it next week. 
