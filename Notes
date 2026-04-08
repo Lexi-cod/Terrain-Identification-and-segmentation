@@ -40,3 +40,13 @@ Considering 2 options for now:
 epoch=450, epoch step=150, val step=150
 val mIoU - 54-55% - hallucinating!!!!!!!!!
 Going with option 1. Will get the data sorted and will work on it next week. 
+
+-----------------------------------------
+
+There was a version 3 where i tried to increase the rare class observations but was just not working. So ended up using the compelete train and val dataset. 
+With 56.1% mIoU right now.
+Observations: 
+1. Its working fine and predicting all closer points real well but as the distance increases for a purticular point from the car in the point cloud the prediction accuracy decreases. It is apparently called distance-based prediction degradation! So when the model can't predict whats far away it defaults to "car"-'the dominant large class object', because that's what most large sparse clusters were in training.
+2. I tried to like the 2D model that we were doing point the direction the car can go on each predicted point cloud and comapred it with ground truth and guess what its right 91% of the time. Hmm looks and sounds good but can be improved.
+
+ending here for the class project will do more and will try to improve the mIoU of the KPConv predicted Semantic KITTI above the benchmark proven which is 58.6? 8? yea whatever.
